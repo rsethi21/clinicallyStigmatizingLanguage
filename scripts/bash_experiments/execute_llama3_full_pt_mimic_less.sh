@@ -1,0 +1,21 @@
+#!/bin/bash
+deepspeed --num_gpus 8 /home1/rsethi1/stigmatizing_lang_rsh/LLaMA-Factory/src/train.py \
+    --deepspeed /home1/rsethi1/stigmatizing_lang_rsh/inputs/configs/ds_config.json \
+    --stage pt \
+    --do_train \
+    --model_name_or_path /home1/shared/Models/Llama/Meta-Llama-3-8B-Instruct \
+    --dataset summ_pretrain \
+    --template llama3 \
+    --cutoff_len 34 \
+    --output_dir /home1/rsethi1/stigmatizing_lang_rsh/outputs/models/llama3_continuous_pt_full_mimic_less \
+    --overwrite_cache \
+    --overwrite_output_dir \
+    --per_device_train_batch_size 1 \
+    --gradient_accumulation_steps 8 \
+    --lr_scheduler_type cosine \
+    --logging_steps 10 \
+    --save_steps 500 \
+    --learning_rate 0.0001 \
+    --num_train_epochs 3.0 \
+    --finetuning_type full \
+    --plot_loss
