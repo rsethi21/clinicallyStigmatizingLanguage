@@ -106,9 +106,9 @@ def generate(prompt: str, pipeline: object, tokenizer: object, parameters: dict)
     return generated_text
 
 def query_transform(prompt: str, pipeline: object, tokenizer: object, parameters: dict):
-    appendation = "\nBelow is your original analysis of the clinical note. You may borrow from or change this analysis with the given stigmatizing language context/guidance above:\n"
+    appendation = "\nBelow is your original analysis of the clinical note. You may borrow from or change this analysis with the given stigmatizing language context/guidance below:\n"
     initial_answer = generate(prompt, pipeline, tokenizer, parameters)
-    return appendation + initial_answer
+    return appendation + "This was your original answer to whether there is stigmatizing language in the clinical note: " + initial_answer + "\n"
 
 def create_sub_queries(query, chunk_size, chunk_overlap, tokenizer):
     assert chunk_size > chunk_overlap, "Overlap must be less than size of chunk in tokens"
