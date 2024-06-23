@@ -105,6 +105,11 @@ def generate(prompt: str, pipeline: object, tokenizer: object, parameters: dict)
         generated_text = generated_text.encode('ascii', errors='ignore').strip().decode('ascii')
     return generated_text
 
+def query_transform(prompt: str, pipeline: object, tokenizer: object, parameters: dict):
+    appendation = "\nBelow is your original analysis of the clinical note. You may borrow from or change this analysis with the given stigmatizing language context/guidance above:\n"
+    initial_answer = generate(prompt, pipeline, tokenizer, parameters)
+    return appendation + initial_answer
+
 def create_sub_queries(query, chunk_size, chunk_overlap, tokenizer):
     assert chunk_size > chunk_overlap, "Overlap must be less than size of chunk in tokens"
     tokens = tokenizer(query, return_tensors="pt")
@@ -160,7 +165,13 @@ if __name__ == "__main__":
     for i in tqdm(input_notes, desc="Notes"):
         if parameters["method"]["chunking"] == None:
             if parameters["method"]["context_path"] != None:
-                selected_context = similarity_selection(i, input_context_texts, pipeline_ee, sim_fn=similarity_mapping[parameters["method"]["scoring"]], num=parameters["method"]["num_context"], model=model, tokenizer=tokenizer)
+                if parameters["method"]["transform"]:
+                    basic_prompt = format_message(parameters["method"]["sp"], i, context=None, model_v=parameters["method"]["formatting"])
+                    i = i + query_transform(basic_prompt, pipeline_tg, tokenizer, parameters)
+                if parameters["method"]["num_context"] != None:
+                    selected_context = similarity_selection(i, input_context_texts, pipeline_ee, sim_fn=similarity_mapping[parameters["method"]["scoring"]], num=parameters["method"]["num_context"], model=model, tokenizer=tokenizer)
+                else:
+                    selected_context = "\n\n".join(input_context_texts)
             else:
                 selected_context = None
             selected_contexts.append(selected_context)
@@ -172,7 +183,10 @@ if __name__ == "__main__":
             note_chunks = create_sub_queries(i, int(parameters["method"]["chunking"]["chunk_size"]), int(parameters["method"]["chunking"]["overlap_size"]), tokenizer)
             for ind, sub_i in tqdm(enumerate(note_chunks), desc="Note Chunk", total=len(note_chunks)):
                 if parameters["method"]["context_path"] != None:
-                    selected_context = similarity_selection(sub_i, input_context_texts, pipeline_ee, sim_fn=similarity_mapping[parameters["method"]["scoring"]], num=parameters["method"]["num_context"], model=model, tokenizer=tokenizer)
+                    if parameters["method"]["num_context"] != None:
+                        selected_context = similarity_selection(sub_i, input_context_texts, pipeline_ee, sim_fn=similarity_mapping[parameters["method"]["scoring"]], num=parameters["method"]["num_context"], model=model, tokenizer=tokenizer)
+                    else:
+                        selected_context = "\n\n".join(input_context_texts)
                 else:
                     selected_context = None
                 temp_contexts.append(f"Note Chunk {ind+1} Context: {selected_context}")
