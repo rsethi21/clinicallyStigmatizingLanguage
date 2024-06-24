@@ -24,9 +24,12 @@ if __name__ == "__main__":
         for folder in process_folders:
             if os.path.isdir(folder):
                 data_to_merge[file].extend(json.load(open(os.path.join(folder, file), "r")))
+    if "csv" in args.output:
+        df = pd.DataFrame.from_dict(data_to_merge)
+        df.to_csv(args.output)
+    elif "json" in args.output:
+        json.dump(open(args.output, "w"))
     try:
         os.system(f"rm -r {os.path.join(args.input, 'process*')}")
     except:
         pass
-    df = pd.DataFrame.from_dict(data_to_merge)
-    df.to_csv(args.output)

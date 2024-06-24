@@ -158,7 +158,7 @@ if __name__ == "__main__":
     
     # openning csv file
     input_df = pd.read_csv(args.notes_fp)
-    input_notes = list(input_df["Assessment"])
+    input_notes = list(input_df["IdentifiedSentence"])
     constitution = pd.read_csv(parameters["method"]["sp"])
     constitution
 
@@ -171,13 +171,13 @@ if __name__ == "__main__":
         critiques = []
         revisions = [] # use all revision, input pairs for training purposes
         for pos, i in tqdm(enumerate(input_notes), desc="Notes", total=len(input_notes)):
-            if not parameters["method"]["attempts"]:
+            if not parameters["method"]["vary"]:
                 bylaw = constitution.sample(n=1) # should I force different one for each epoch or just allow random (look into difference)
             temp_critiques = []
             temp_revisions = [i]
             temp_input = i
             for __ in tqdm(range(parameters["method"]["attempts"]), desc="Attempts", total=parameters["method"]["attempts"]):
-                if parameters["method"]["attempts"]:
+                if parameters["method"]["vary"]:
                     bylaw = constitution.sample(n=1)
                 critique = None
                 prompt = format_message(bylaw.critique_request.values[0], temp_input, context=critique, model_v=parameters["method"]["formatting"])

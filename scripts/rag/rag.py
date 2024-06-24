@@ -106,9 +106,9 @@ def generate(prompt: str, pipeline: object, tokenizer: object, parameters: dict)
     return generated_text
 
 def query_transform(prompt: str, pipeline: object, tokenizer: object, parameters: dict):
-    appendation = "\nBelow is your original analysis of the clinical note. You may borrow from or change this analysis with the given stigmatizing language context/guidance below:\n"
+    appendation = "Here is your original analysis of stigmatizing language in the clinical note: "
     initial_answer = generate(prompt, pipeline, tokenizer, parameters)
-    return appendation + "This was your original answer to whether there is stigmatizing language in the clinical note: " + initial_answer + "\n"
+    return "\n" + appendation + initial_answer + "\n" + "You may borrow from or change this analysis with the given stigmatizing language context/guidance below." + "\n"
 
 def create_sub_queries(query, chunk_size, chunk_overlap, tokenizer):
     assert chunk_size > chunk_overlap, "Overlap must be less than size of chunk in tokens"
@@ -183,6 +183,9 @@ if __name__ == "__main__":
             note_chunks = create_sub_queries(i, int(parameters["method"]["chunking"]["chunk_size"]), int(parameters["method"]["chunking"]["overlap_size"]), tokenizer)
             for ind, sub_i in tqdm(enumerate(note_chunks), desc="Note Chunk", total=len(note_chunks)):
                 if parameters["method"]["context_path"] != None:
+                    if parameters["method"]["transform"]:
+                        basic_prompt = format_message(parameters["method"]["sp"], sub_i, context=None, model_v=parameters["method"]["formatting"])
+                        sub_i = sub_i + query_transform(basic_prompt, pipeline_tg, tokenizer, parameters)
                     if parameters["method"]["num_context"] != None:
                         selected_context = similarity_selection(sub_i, input_context_texts, pipeline_ee, sim_fn=similarity_mapping[parameters["method"]["scoring"]], num=parameters["method"]["num_context"], model=model, tokenizer=tokenizer)
                     else:
