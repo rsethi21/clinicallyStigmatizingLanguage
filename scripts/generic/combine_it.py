@@ -28,7 +28,7 @@ if __name__ == "__main__":
         df = pd.DataFrame.from_dict(data_to_merge)
         df.to_csv(args.output)
     elif "json" in args.output:
-        json.dump(open(args.output, "w"))
+        json.dump(data_to_merge, open(args.output, "w"))
     try:
         os.system(f"rm -r {os.path.join(args.input, 'process*')}")
     except:

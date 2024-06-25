@@ -182,10 +182,10 @@ if __name__ == "__main__":
                 critique = None
                 prompt = format_message(bylaw.critique_request.values[0], temp_input, context=critique, model_v=parameters["method"]["formatting"])
                 temp_critiques.append(generate_critique(prompt, pipeline_tg, tokenizer, parameters))
-                critique = temp_critiques[__]
+                critique = temp_critiques[-1]
                 prompt = format_message(bylaw.revision_request.values[0], temp_input, context=critique, model_v=parameters["method"]["formatting"])
                 temp_revisions.append(generate_revision(prompt, pipeline_tg, tokenizer, parameters))
-                temp_input = temp_revisions[__]
+                temp_input = temp_revisions[-1]
                 all_dpo_prompts.append(bylaw.alignment_request.values[0])
             critiques.append(temp_critiques)
             revisions.append(temp_revisions)
