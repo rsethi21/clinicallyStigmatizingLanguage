@@ -97,14 +97,20 @@ def sft_formatting(pairs, sp):
         data.append(entry)
     return data
 
-def dpo_formatting(pairs, sp):
+def dpo_formatting(pairs, sp, type="new"):
     data = []
     for pair, s in zip(pairs, sp):
-        entry = {
-            "instruction": s,
-            "chosen": pair[1],
-            "rejected": pair[0]
-        }
+        if type == "old":
+            entry = {
+                "instruction": s,
+                "output": [pair[1], pair[0]]
+            }
+        else:
+            entry = {
+                "instruction": s,
+                "chosen": pair[1],
+                "rejected": pair[0]
+            }
         data.append(entry)
     return data
 
