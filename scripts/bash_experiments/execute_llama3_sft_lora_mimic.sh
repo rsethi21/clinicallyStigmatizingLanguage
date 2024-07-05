@@ -4,9 +4,9 @@ deepspeed --num_gpus 8 /home1/rsethi1/stigmatizing_lang_rsh/LLaMA-Factory-2.0/sr
     --stage sft \
     --do_train \
     --model_name_or_path /home1/shared/Models/Llama/Meta-Llama-3-8B-Instruct \
-    --dataset sft_chunked \
+    --dataset larger_sft \
     --template llama3 \
-    --output_dir /home1/rsethi1/stigmatizing_lang_rsh/outputs/models/cai_sft_chunked \
+    --output_dir /home1/rsethi1/stigmatizing_lang_rsh/outputs/models_larger/sft \
     --overwrite_cache \
     --overwrite_output_dir \
     --per_device_train_batch_size 1 \
@@ -14,8 +14,8 @@ deepspeed --num_gpus 8 /home1/rsethi1/stigmatizing_lang_rsh/LLaMA-Factory-2.0/sr
     --lr_scheduler_type cosine \
     --logging_steps 10 \
     --save_steps 500 \
-    --learning_rate 0.0001 \
-    --num_train_epochs 15.0 \
+    --learning_rate 0.00001 \
+    --num_train_epochs 3.0 \
     --fp16 \
     --plot_loss \
     --finetuning_type lora \

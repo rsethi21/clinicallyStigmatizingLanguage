@@ -110,7 +110,7 @@ if __name__ == "__main__":
         outputs = input_notes
     if type(outputs[0]) == list:
         outputs = [",".join(output) for output in outputs]
-    processed_auto = [1 if "yes" in entry.lower() else 0 for entry in outputs]
+    processed_auto = [1 if "yes" in str(entry).lower() else 0 for entry in outputs]
 
     with open(os.path.join(args.output_fp, "predictions.json"), "w") as outfile_generation:
         json.dump(processed_auto, outfile_generation)

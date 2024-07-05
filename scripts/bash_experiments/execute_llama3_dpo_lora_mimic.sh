@@ -3,10 +3,10 @@ deepspeed --num_gpus 8 /home1/rsethi1/stigmatizing_lang_rsh/LLaMA-Factory-2.0/sr
     --deepspeed /home1/rsethi1/stigmatizing_lang_rsh/inputs/configs/ds_config.json \
     --stage dpo \
     --do_train \
-    --model_name_or_path /home1/rsethi1/stigmatizing_lang_rsh/outputs/models/merged_cai_sft \
-    --dataset dpo_stigmatizing \
+    --model_name_or_path /home1/rsethi1/stigmatizing_lang_rsh/outputs/models_larger/sft_merged \
+    --dataset larger_dpo \
     --template llama3 \
-    --output_dir /home1/rsethi1/stigmatizing_lang_rsh/outputs/models/cai_dpo_more \
+    --output_dir /home1/rsethi1/stigmatizing_lang_rsh/outputs/models_larger/dpo \
     --overwrite_cache \
     --overwrite_output_dir \
     --per_device_train_batch_size 1 \

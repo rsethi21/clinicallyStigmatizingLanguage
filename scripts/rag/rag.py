@@ -37,7 +37,7 @@ def mean_dot_similarity(str1: str, str2: str):
 def mean_cosine_similarity(str1: str, str2: str):
     return np.dot(str1, np.transpose(str2))/(np.linalg.norm(str1)*np.linalg.norm(str2))
 
-def similarity_selection(i, sequences_to_compare, pipe, sim_fn=mean_cosine_similarity, num=1, model=None, tokenizer=None):
+def similarity_selection(i, sequences_to_compare, pipe, sim_fn=mean_cosine_similarity, num=1, model=None, tokenizer=None, threshold=None):
     if sim_fn != perplexity:
         str1_embeddings = embeddings(i, pipe)
         str1_vector = np.mean(np.array(str1_embeddings[0]), axis=0)
@@ -50,11 +50,21 @@ def similarity_selection(i, sequences_to_compare, pipe, sim_fn=mean_cosine_simil
         else:
             scores.append(sim_fn(comparison, i, model, tokenizer))
     sorted_scores = sorted(scores)
-    selected_context = ""
-    for n in range(num):
-        find_score = sorted_scores[-1*(n+1)]
-        ind = scores.index(find_score)
-        selected_context += f"{sequences_to_compare[ind]}\n\n"
+    if threshold != None and sim_fn == mean_cosine_similarity:
+        if sorted_scores[-1] < threshold:
+            selected_context = None
+        else:
+            selected_context = ""
+            for n in range(num):
+                find_score = sorted_scores[-1*(n+1)]
+                ind = scores.index(find_score)
+                selected_context += f"{sequences_to_compare[ind]}\n\n"
+    else:
+        selected_context = ""
+        for n in range(num):
+            find_score = sorted_scores[-1*(n+1)]
+            ind = scores.index(find_score)
+            selected_context += f"{sequences_to_compare[ind]}\n\n"
     return selected_context
 
 def format_message(sp: str, input: str, context: str or None = None, model_v: str = "llama3"):
@@ -169,7 +179,7 @@ if __name__ == "__main__":
                     basic_prompt = format_message(parameters["method"]["sp"], i, context=None, model_v=parameters["method"]["formatting"])
                     i = i + query_transform(basic_prompt, pipeline_tg, tokenizer, parameters)
                 if parameters["method"]["num_context"] != None:
-                    selected_context = similarity_selection(i, input_context_texts, pipeline_ee, sim_fn=similarity_mapping[parameters["method"]["scoring"]], num=parameters["method"]["num_context"], model=model, tokenizer=tokenizer)
+                    selected_context = similarity_selection(i, input_context_texts, pipeline_ee, sim_fn=similarity_mapping[parameters["method"]["scoring"]], num=parameters["method"]["num_context"], model=model, tokenizer=tokenizer, threshold=parameters["method"]["threshold"])
                 else:
                     selected_context = "\n\n".join(input_context_texts)
             else:
@@ -187,7 +197,7 @@ if __name__ == "__main__":
                         basic_prompt = format_message(parameters["method"]["sp"], sub_i, context=None, model_v=parameters["method"]["formatting"])
                         sub_i = sub_i + query_transform(basic_prompt, pipeline_tg, tokenizer, parameters)
                     if parameters["method"]["num_context"] != None:
-                        selected_context = similarity_selection(sub_i, input_context_texts, pipeline_ee, sim_fn=similarity_mapping[parameters["method"]["scoring"]], num=parameters["method"]["num_context"], model=model, tokenizer=tokenizer)
+                        selected_context = similarity_selection(sub_i, input_context_texts, pipeline_ee, sim_fn=similarity_mapping[parameters["method"]["scoring"]], num=parameters["method"]["num_context"], model=model, tokenizer=tokenizer, threshold=parameters["method"]["threshold"])
                     else:
                         selected_context = "\n\n".join(input_context_texts)
                 else:
@@ -196,6 +206,7 @@ if __name__ == "__main__":
                 prompt = format_message(parameters["method"]["sp"], sub_i, context=selected_context, model_v=parameters["method"]["formatting"])
                 temp_outputs.append(generate(prompt, pipeline_tg, tokenizer, parameters))
             selected_contexts.append("\n\n".join(temp_contexts))
+            print(selected_contexts[-1])
             outputs.append(temp_outputs)
     
     with open(os.path.join(args.output_fp, "generated_outputs.json"), "w") as outfile_generation:
