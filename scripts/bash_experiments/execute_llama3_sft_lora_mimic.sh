@@ -1,12 +1,12 @@
 #!/bin/bash
-deepspeed --num_gpus 8 /home1/rsethi1/stigmatizing_lang_rsh/LLaMA-Factory-2.0/src/train.py \
-    --deepspeed /home1/rsethi1/stigmatizing_lang_rsh/inputs/configs/ds_config.json \
+deepspeed --num_gpus 8 path-to-llamafactory-train.py \
+    --deepspeed path-to-configuration-deepspeed-file-ds_config.json \
     --stage sft \
     --do_train \
-    --model_name_or_path /home1/shared/Models/Llama/Meta-Llama-3-8B-Instruct \
+    --model_name_or_path path-to-directory-with-model-safe-tensors-or-model-name \
     --dataset sft \
     --template llama3 \
-    --output_dir /home1/rsethi1/stigmatizing_lang_rsh/outputs/models/sft_adapter \
+    --output_dir path-to-output-directory-of-your-choice \
     --overwrite_cache \
     --overwrite_output_dir \
     --per_device_train_batch_size 8 \
