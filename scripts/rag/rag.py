@@ -206,7 +206,6 @@ if __name__ == "__main__":
                 prompt = format_message(parameters["method"]["sp"], sub_i, context=selected_context, model_v=parameters["method"]["formatting"])
                 temp_outputs.append(generate(prompt, pipeline_tg, tokenizer, parameters))
             selected_contexts.append("\n\n".join(temp_contexts))
-            print(selected_contexts[-1])
             outputs.append(temp_outputs)
     
     with open(os.path.join(args.output_fp, "generated_outputs.json"), "w") as outfile_generation:

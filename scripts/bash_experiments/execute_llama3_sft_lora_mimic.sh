@@ -4,12 +4,12 @@ deepspeed --num_gpus 8 /home1/rsethi1/stigmatizing_lang_rsh/LLaMA-Factory-2.0/sr
     --stage sft \
     --do_train \
     --model_name_or_path /home1/shared/Models/Llama/Meta-Llama-3-8B-Instruct \
-    --dataset larger_sft \
+    --dataset sft \
     --template llama3 \
-    --output_dir /home1/rsethi1/stigmatizing_lang_rsh/outputs/models_larger/sft \
+    --output_dir /home1/rsethi1/stigmatizing_lang_rsh/outputs/models/sft_adapter \
     --overwrite_cache \
     --overwrite_output_dir \
-    --per_device_train_batch_size 1 \
+    --per_device_train_batch_size 8 \
     --gradient_accumulation_steps 1 \
     --lr_scheduler_type cosine \
     --logging_steps 10 \
