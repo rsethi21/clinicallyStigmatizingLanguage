@@ -44,18 +44,25 @@ def mean_cosine_similarity(str1: str, str2: str):
 
 # function to select sequences that are most similar
 def similarity_selection(i, sequences_to_compare, pipe, sim_fn=mean_cosine_similarity, num=1, model=None, tokenizer=None, threshold=None):
+    # convert string to numerical vectors (average token embeddings)
     if sim_fn != perplexity:
         str1_embeddings = embeddings(i, pipe)
         str1_vector = np.mean(np.array(str1_embeddings[0]), axis=0)
+    # make comparisons between sequence i and the sequences to compare
     scores = []
     for comparison in tqdm(sequences_to_compare, desc="RAG Selection"):
         if sim_fn != perplexity:
+            # extract sequence to compare embedding
             str2_embeddings = embeddings(comparison, pipe)
             str2_vector = np.mean(np.array(str2_embeddings[0]), axis=0)
+            # calculate similarity with the similarity vector of the user's choice
             scores.append(sim_fn(str1_vector, str2_vector))
+        # otherwise make comparison with perplexity function that does not require embeddings
         else:
             scores.append(sim_fn(comparison, i, model, tokenizer))
+    # determine the most likely entries
     sorted_scores = sorted(scores)
+    # select top n context entries, none if none of them meet threshold
     if threshold != None and sim_fn == mean_cosine_similarity:
         if sorted_scores[-1] < threshold:
             selected_context = None
@@ -65,6 +72,7 @@ def similarity_selection(i, sequences_to_compare, pipe, sim_fn=mean_cosine_simil
                 find_score = sorted_scores[-1*(n+1)]
                 ind = scores.index(find_score)
                 selected_context += f"{sequences_to_compare[ind]}\n\n"
+    # select top n context entries
     else:
         selected_context = ""
         for n in range(num):
@@ -184,23 +192,32 @@ if __name__ == "__main__":
     selected_contexts = []
     # iterate notes and apply RAG
     for i in tqdm(input_notes, desc="Notes"):
+        # if there is no chunking
         if parameters["method"]["chunking"] == None:
+            # if there is a context entry rag dataset entered
             if parameters["method"]["context_path"] != None:
+                # if there is requirement for sequential prompting
                 if parameters["method"]["transform"]:
                     basic_prompt = format_message(parameters["method"]["sp"], i, context=None, model_v=parameters["method"]["formatting"])
                     i = i + query_transform(basic_prompt, pipeline_tg, tokenizer, parameters)
+                # if there is set number of context entries, use top n using similarity selection (RAG)
                 if parameters["method"]["num_context"] != None:
                     selected_context = similarity_selection(i, input_context_texts, pipeline_ee, sim_fn=similarity_mapping[parameters["method"]["scoring"]], num=parameters["method"]["num_context"], model=model, tokenizer=tokenizer, threshold=parameters["method"]["threshold"])
+                # otherwise append all context entries (in-context approach)
                 else:
                     selected_context = "\n\n".join(input_context_texts)
+            # otherwise, no context augmentation
             else:
                 selected_context = None
+            # take selected contexts and format prompt as such, then generate response using context if selected
             selected_contexts.append(selected_context)
             prompt = format_message(parameters["method"]["sp"], i, context=selected_context, model_v=parameters["method"]["formatting"])
             outputs.append(generate(prompt, pipeline_tg, tokenizer, parameters))
+        # if there is chunking, essentially the same thing as above except applied to each chunk separately
         else:
             temp_contexts = []
             temp_outputs = []
+            # separate note into chunks and repeat the above for each chunk
             note_chunks = create_sub_queries(i, int(parameters["method"]["chunking"]["chunk_size"]), int(parameters["method"]["chunking"]["overlap_size"]), tokenizer)
             for ind, sub_i in tqdm(enumerate(note_chunks), desc="Note Chunk", total=len(note_chunks)):
                 if parameters["method"]["context_path"] != None:
@@ -219,6 +236,7 @@ if __name__ == "__main__":
             selected_contexts.append("\n\n".join(temp_contexts))
             outputs.append(temp_outputs)
     
+    # save output as jsons and the asscoiated selected contexts for later error analysis
     with open(os.path.join(args.output_fp, "generated_outputs.json"), "w") as outfile_generation:
         json.dump(outputs, outfile_generation)
     with open(os.path.join(args.output_fp, "contexts.json"), "w") as outfile_context:
