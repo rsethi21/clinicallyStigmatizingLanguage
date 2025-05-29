@@ -1,0 +1,23 @@
+# hyperparameters for llm
+llm:
+  do_sample: True
+  top_k: 10
+  num_return_sequences: 1
+  temperature: 0.001
+  max_length: 6144
+  max_new_tokens: 6144
+  length_penalty: 1.0
+  repetition_penalty: 1.0
+  num_beams: 1
+# hyperparameters for approach
+method:
+  formatting: llama3 # formatting instructions
+  model_path: <path/to/local/model/instance>
+  context_path: null # path to context if desired to give the model information about stigmatizing language
+  # system prompt
+  sp: You are a physician revising your clinical notes. You must determine if your note has any clinically stigmatizing languange. Please answer simply yes or no and no other text.
+  num_context: null # number of context entries (if null then either all or none depending on if context path is given)
+  scoring: null # scoring metric
+  chunking: # chunking if desired to process notes as pieces
+    chunk_size: 1000
+    overlap_size: 100

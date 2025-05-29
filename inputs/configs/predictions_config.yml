@@ -1,0 +1,17 @@
+# hyperparameters for llm
+llm:
+  do_sample: True
+  top_k: 10
+  num_return_sequences: 1
+  temperature: 0.001
+  max_length: 6144
+  max_new_tokens: 6144
+  length_penalty: 1.0
+  repetition_penalty: 1.0
+  num_beams: 1
+# hyperparameters for the predictions script
+method:
+  formatting: llama3 # formatting, best to keep as llama3
+  model_path: <path/to/local/instance/of/model>
+  sp: Below is the output you provided for determining whether a clinical note has clinically stigmatizing language. According to your answer below, please determine if you found stigmatizing language. Please answer with only yes or no and nothing else.
+  pipeline: False # pipeline if you want to use the system prompt (sp) above to further process model output into a yes or no for predictions

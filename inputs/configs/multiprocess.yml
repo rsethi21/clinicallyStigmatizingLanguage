@@ -1,0 +1,8 @@
+multiprocessing_args:
+  experiment_path: <path/to/experiment/for/multi/processing>
+  model_configs_path: <path/to/configs/for/multiprocessing>
+  data_path: <path/to/data/in/csv/format>
+  num_processes: <number of gpus>
+  output_path: <path/to/output/folder>
+  frac: null # sample subset of data
+  rs: null # random state

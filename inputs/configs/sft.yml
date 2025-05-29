@@ -1,0 +1,15 @@
+# hyperparameters for llm
+llm:
+  do_sample: True
+  top_k: 10
+  num_return_sequences: 1
+  temperature: 0.001
+  max_length: 8192
+  max_new_tokens: 10 # 6144
+  length_penalty: 1.0
+  repetition_penalty: 1.0
+  num_beams: 1
+method:
+  model_path: <path/to/trained/model>
+  # system prompt
+  sp: You are a physician revising your clinical notes. You must determine if your note has any clinically stigmatizing language in terms of substance use. Please answer simply yes or no and no other text.
