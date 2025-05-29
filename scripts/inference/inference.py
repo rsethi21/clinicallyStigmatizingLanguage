@@ -13,15 +13,17 @@ import numpy as np
 
 # arguments for commandline interface
 parser = argparse.ArgumentParser()
-parser.add_argument("-p", "--configurations_fp", help="path to configurations file for experiment", required=True)
-parser.add_argument("-d", "--notes_fp", help="path to file with clinical notes in csv format", required=True)
-parser.add_argument("-o", "--output_fp", help="path to folder for outputs", required=True)
+parser.add_argument("-p", "--configurations_fp", help="path to configurations file for experiment", required=True) # yaml configs to run appropriate experiment
+parser.add_argument("-d", "--notes_fp", help="path to file with clinical notes in csv format", required=True) # path to csv with notes to infer on
+parser.add_argument("-o", "--output_fp", help="path to folder for outputs", required=True) # path to a folder to store outputs
 
+# function to load in yaml configs
 def readYaml(fp: str):
     with open(fp, "r") as file:
         dictionary = yaml.safe_load(file)
     return dictionary
 
+# function to format llm prompt
 def format_message(sp: str, input: str):
     """
     Purpose: create chat dialog following appropriate format.
@@ -34,6 +36,7 @@ def format_message(sp: str, input: str):
     end = "<|start_header_id|>assistant<|end_header_id|>" # end token
     return start+system_prompt+input_data+end
 
+# function to create a generation instance and parse output text
 def generate(prompt: str, pipeline: object, tokenizer: object, parameters: dict):
     # generating output
     generated_outputs = pipeline(
@@ -76,5 +79,6 @@ if __name__ == "__main__":
         prompt = format_message(parameters["method"]["sp"], i)
         outputs.append(generate(prompt, pipeline_tg, tokenizer, parameters))
     
+    # store outputs as a json of predictions
     with open(os.path.join(args.output_fp, "generated_outputs.json"), "w") as outfile_generation:
         json.dump(outputs, outfile_generation)
