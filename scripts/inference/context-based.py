@@ -13,30 +13,36 @@ import numpy as np
 
 # arguments for commandline interface
 parser = argparse.ArgumentParser()
-parser.add_argument("-p", "--configurations_fp", help="path to configurations file for RAG experiment", required=True)
-parser.add_argument("-d", "--notes_fp", help="path to file with clinical notes in csv format", required=True)
-parser.add_argument("-o", "--output_fp", help="path to folder for outputs", required=True)
+parser.add_argument("-p", "--configurations_fp", help="path to configurations file for RAG experiment", required=True) # configs for the experiment
+parser.add_argument("-d", "--notes_fp", help="path to file with clinical notes in csv format", required=True) # input csv with clinical notes
+parser.add_argument("-o", "--output_fp", help="path to folder for outputs", required=True) # output folder path
 
+# load yaml configuration file
 def readYaml(fp: str):
     with open(fp, "r") as file:
         dictionary = yaml.safe_load(file)
     return dictionary
 
+# generate embedding vectors for text using a pipeline object in transformers
 def embeddings(i: str, pipeline_ee: object):
     return pipeline_ee(i)
 
+# calculate a perplexity score for text
 def perplexity(str1, str2, model, tokenizer):
   inputs = tokenizer(str1 + "\n" + str2, return_tensors="pt")
   loss = model(input_ids=inputs["input_ids"], labels=inputs["input_ids"]).loss
   ppl = torch.exp(loss)
   return ppl
 
+# calculuate dot product
 def mean_dot_similarity(str1: str, str2: str):
     return np.dot(str1, np.transpose(str2))
 
+# calculate cosine similarity
 def mean_cosine_similarity(str1: str, str2: str):
     return np.dot(str1, np.transpose(str2))/(np.linalg.norm(str1)*np.linalg.norm(str2))
 
+# function to select sequences that are most similar
 def similarity_selection(i, sequences_to_compare, pipe, sim_fn=mean_cosine_similarity, num=1, model=None, tokenizer=None, threshold=None):
     if sim_fn != perplexity:
         str1_embeddings = embeddings(i, pipe)
@@ -67,6 +73,7 @@ def similarity_selection(i, sequences_to_compare, pipe, sim_fn=mean_cosine_simil
             selected_context += f"{sequences_to_compare[ind]}\n\n"
     return selected_context
 
+# format prompt for LLM
 def format_message(sp: str, input: str, context: str or None = None, model_v: str = "llama3"):
     """
     Purpose: create chat dialog following appropriate format.
@@ -94,6 +101,7 @@ def format_message(sp: str, input: str, context: str or None = None, model_v: st
         end = "<|start_header_id|>assistant<|end_header_id|>" # end token
     return start+system_prompt+input_data+end
 
+# run an inference instance for an LLM
 def generate(prompt: str, pipeline: object, tokenizer: object, parameters: dict):
     # asserting only certain formatting for output parsing purposes
     assert parameters["method"]["formatting"] in ["llama2", "llama3", "none"], "Only formatting allowed: llama2, llama3, none (which is llama2)."
@@ -115,11 +123,13 @@ def generate(prompt: str, pipeline: object, tokenizer: object, parameters: dict)
         generated_text = generated_text.encode('ascii', errors='ignore').strip().decode('ascii')
     return generated_text
 
+# reprompting technique; basically asking the model to re-evaluate itself based on its original answer
 def query_transform(prompt: str, pipeline: object, tokenizer: object, parameters: dict):
     appendation = "Here is your original analysis of stigmatizing language in the clinical note: "
     initial_answer = generate(prompt, pipeline, tokenizer, parameters)
     return "\n" + appendation + initial_answer + "\n" + "You may borrow from or change this analysis with the given stigmatizing language context/guidance below." + "\n"
 
+# chunking function
 def create_sub_queries(query, chunk_size, chunk_overlap, tokenizer):
     assert chunk_size > chunk_overlap, "Overlap must be less than size of chunk in tokens"
     tokens = tokenizer(query, return_tensors="pt")
@@ -131,6 +141,7 @@ def create_sub_queries(query, chunk_size, chunk_overlap, tokenizer):
         else:
             sub_queries.append(tokenizer.decode(np.array(tokens[i:i+chunk_size])))
     return sub_queries
+
 
 if __name__ == "__main__":
     # arguments
