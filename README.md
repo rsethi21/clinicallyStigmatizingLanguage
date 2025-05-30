@@ -1,12 +1,14 @@
 # clinicallyStigmatizingLanguage
-## Set-up
-- Install required packages on linux/mac
+## Set-up (on Linux below, please adjust for other OS)
+- create virtual environment or other package management
 ```
 python3 -m venv venv
 ```
+- activate virtual environment or other package management
 ```
 source venv/bin/activate
 ```
+- install requirements using pip
 ```
 pip3 install -r path/to/requirements.txt
 ```
