@@ -4,7 +4,7 @@ deepspeed --num_gpus 8 path-to-llamafactory-train.py \
     --stage sft \
     --do_train \
     --model_name_or_path path-to-directory-with-model-safe-tensors-or-model-name \
-    --dataset sft \
+    --dataset name-of-dataset-in-llama-factory \
     --template llama3 \
     --output_dir path-to-output-directory-of-your-choice \
     --overwrite_cache \
