@@ -1,4 +1,16 @@
 # clinicallyStigmatizingLanguage
+## Set-up
+- Install required packages on linux/mac
+```
+python3 -m venv venv
+```
+```
+source venv/bin/activate
+```
+```
+pip3 install -r path/to/requirements.txt
+```
+
 ## Run Inference
 - SFT Model
 ```
