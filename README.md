@@ -15,12 +15,25 @@ pip3 install -r path/to/requirements.txt
 
 ## Configs
 
+
 ## Run Inference
-- SFT Model
+- Zeroshot Approach
+```
+
+```
+- Retrieval Augmented Generation (RAG) Approach
+```
+
+```
+- In-Context Approach
+```
+
+```
+- SFT Approach
 ```
 nohup python3 path/to/inference.py -p path/to/sft.yml -d path/to/csv/file -o path/to/output/json > path/to/log/file 2>&1 &
 ```
-- Baseline
+- Baseline Keyword Approach
 ```
 python3 path/to/manual.py -p path/to/manual.yml -d path/to/csv/file -o path/to/output/json
 ```
