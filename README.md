@@ -19,15 +19,15 @@ pip3 install -r path/to/requirements.txt
 ## Run Inference
 - Zeroshot Approach
 ```
-
+nohup python3 path/to/inference.py -p path/to/zeroshot.yml -d path/to/csv/file -o path/to/output/json > path/to/log/file 2>&1 &
 ```
 - Retrieval Augmented Generation (RAG) Approach
 ```
-
+nohup python3 path/to/inference.py -p path/to/rag.yml -d path/to/csv/file -o path/to/output/json > path/to/log/file 2>&1 &
 ```
 - In-Context Approach
 ```
-
+nohup python3 path/to/inference.py -p path/to/context.yml -d path/to/csv/file -o path/to/output/json > path/to/log/file 2>&1 &
 ```
 - SFT Approach
 ```
@@ -46,3 +46,7 @@ python3 bootstrapping.py -p path/to/output/json/from/model -t path/to/csv/file/i
 ## Data
 - Store clinical notes to evaluate under the header "Assessment"
 - Store labels for notes under the header "BiasLabel"
+
+## Notes
+- Scripts to multiprocess are provided but not necessary for reproducing results
+- Scripts to process data (splitting, preventing data leakage) are provided but not necessary to reproduce results
