@@ -13,7 +13,7 @@ source venv/bin/activate
 pip3 install -r path/to/requirements.txt
 ```
 
-## Configs Set-up
+## Configs
 
 ## Run Inference
 - SFT Model
