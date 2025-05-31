@@ -57,5 +57,13 @@ def scoring(original, modified, scorer, identity):
     similarity = F1.mean()
     return similarity*identity
 
+def process_identity(output):
+    prediction = None
+    if "yes" in output.lower() and "no" not in output.lower():
+        prediction = 1
+    else:
+        prediction = 0
+    return prediction
+
 if __name__ == "__main__":
     pass
