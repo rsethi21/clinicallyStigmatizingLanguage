@@ -1,0 +1,61 @@
+import argparse
+from tqdm import tqdm
+import pandas as pd
+import yaml
+
+from transformers import AutoTokenizer, AutoModelForCausalLM
+from bert_score import BERTScore
+
+parser = argparse.ArgumentParser()
+parser.add_argument("-i", "--input", help="csv file of clinical notes with sentence snippets", required=True)
+parser.add_argument("-c", "--config", help="yaml file with hyperparameters for LLM and method", required=True)
+parser.add_argument("-o", "--output", help="csv output file path for newly generated dataset", required=False, default="preference.csv")
+
+def readYaml(fp: str):
+    with open(fp, "r") as file:
+        dictionary = yaml.safe_load(file)
+    return dictionary
+
+def format(inp: str, tokenizer: object, sp: str = None, context: str or None = None):
+    messages = []
+    if sp != None:
+        messages.append({"role": "system", "content": sp})
+    if context != None:
+        context_priming = f"Please use the context provided below to answer the question.\nContext:\n{context}"
+    else:
+        context_priming = ""
+    messages.append({"role": "user", "content": f"{context_priming}\n\nHere is your query:\n{inp}"})
+
+    custom_template = """{% for message in messages %}
+    {% if message['role'] == 'system' %}
+    System: {{ message['content'] }}
+    {% elif message['role'] == 'user' %}
+    User: {{ message['content'] }}
+    {% elif message['role'] == 'assistant' %}
+    Assistant: {{ message['content'] }}
+    {% endif %}
+    {% endfor %}
+    """
+    
+    try:
+        input_text=tokenizer.apply_chat_template(messages, tokenize=False)
+    except:
+        tokenizer.chat_template = custom_template
+        input_text=tokenizer.apply_chat_template(messages, tokenize=False)
+
+    return input_text
+
+def generate(prompt: str, pipeline: object, tokenizer: object, parameters: dict):
+    generated_outputs = pipeline(
+        prompt,
+        return_full_text=False,
+        **parameters["llm"])
+    return [generated_outputs[i]["generated_text"] for i in len(generated_outputs)]
+
+def scoring(original, modified, scorer, identity):
+    _, __, F1 = scorer.score([original], [modified])
+    similarity = F1.mean()
+    return similarity*identity
+
+if __name__ == "__main__":
+    pass
