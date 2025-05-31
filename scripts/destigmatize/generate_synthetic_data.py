@@ -74,4 +74,19 @@ def process_identity(output):
     return prediction
 
 if __name__ == "__main__":
-    pass
+    
+    args = parser.parse_args()
+    data = pd.read_csv(args.input)
+    hyperparameters = readYaml(args.config)
+    output_path = args.output
+
+    scoring_model = None
+    identification_model = None
+    identification_tokenizer = None
+    identification_pipeline = None
+    modifying_model = None
+    modifying_tokenizer = None
+    modifying_pipeline = None
+
+    for i, row in data.iterrows():
+        text = row[hyperparameters["method"]["column"]]
