@@ -5,6 +5,7 @@ import yaml
 
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from bert_score import BERTScore
+import evaluate
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-i", "--input", help="csv file of clinical notes with sentence snippets", required=True)
@@ -45,10 +46,10 @@ def format(inp: str, tokenizer: object, sp: str = None, context: str or None = N
 
     return input_text
 
-def generate(prompt: str, pipeline: object, tokenizer: object, parameters: dict):
+def generate(prompt: str, pipeline: object, tokenizer: object, parameters: dict, return_full_text=False):
     generated_outputs = pipeline(
         prompt,
-        return_full_text=False,
+        return_full_text=return_full_text,
         **parameters["llm"])
     return [generated_outputs[i]["generated_text"] for i in len(generated_outputs)]
 
@@ -56,6 +57,13 @@ def scoring(original, modified, scorer, identity):
     _, __, F1 = scorer.score([original], [modified])
     similarity = F1.mean()
     return similarity*identity
+
+def scoring_perplexity(original, modified, scorer, output_identity, model, tokenizer):
+    _, __, F1 = scorer.score([original], [modified])
+    similarity = F1.mean()
+    perplexity = evaluate.load("perplexity")
+    probability = perplexity.compute(predictions=[output_identity], model=model, tokenizer=tokenizer)
+    return similarity*probability[0]
 
 def process_identity(output):
     prediction = None
