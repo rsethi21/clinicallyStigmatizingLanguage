@@ -80,13 +80,29 @@ if __name__ == "__main__":
     hyperparameters = readYaml(args.config)
     output_path = args.output
 
-    scoring_model = None
-    identification_model = None
-    identification_tokenizer = None
-    identification_pipeline = None
-    modifying_model = None
-    modifying_tokenizer = None
-    modifying_pipeline = None
+    scoring_model = BERTScorer(model_type=hyperparameters["method"]["bert"])
+    identification_model = AutoModelForCausalLM.from_pretrained(
+        hyperparameters["method"]["identification_model"],
+        device_map='auto',
+        local_files_only=True)
+    identification_tokenizer = AutoTokenizer.from_pretrained(hyperparameters["method"]["identification_model"], local_files_only=True)
+    identification_pipeline = transformers.pipeline(
+        'text-generation',
+        model=identification_model,
+        tokenizer=identification_tokenizer,
+        torch_dtype=torch.float16,
+        device_map='auto')
+    modifying_model = AutoModelForCausalLM.from_pretrained(
+        hyperparameters["method"]["modification_model"],
+        device_map='auto',
+        local_files_only=True)
+    modifying_tokenizer = AutoTokenizer.from_pretrained(hyperparameters["method"]["modification_model"], local_files_only=True)
+    modifying_pipeline = transformers.pipeline(
+        'text-generation',
+        model=modifying_model,
+        tokenizer=modifying_tokenizer,
+        torch_dtype=torch.float16,
+        device_map='auto')
 
     for i, row in data.iterrows():
         text = row[hyperparameters["method"]["column"]]
