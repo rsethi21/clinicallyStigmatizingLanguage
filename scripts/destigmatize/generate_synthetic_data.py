@@ -80,7 +80,7 @@ if __name__ == "__main__":
     hyperparameters = readYaml(args.config)
     output_path = args.output
 
-    scoring_model = BERTScorer(model_type=hyperparameters["method"]["bert"])
+    scoring_model = BERTScorer(model_type=hyperparameters["method"]["bert"], device='mps', rescale_with_baseline=True, lang='en')
     identification_model = AutoModelForCausalLM.from_pretrained(
         hyperparameters["method"]["identification_model"],
         device_map='auto',
