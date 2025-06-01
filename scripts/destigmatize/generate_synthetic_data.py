@@ -4,7 +4,7 @@ import pandas as pd
 import yaml
 
 from transformers import AutoTokenizer, AutoModelForCausalLM
-from bert_score import BERTScore
+from bert_score import BERTScorer
 import evaluate
 
 parser = argparse.ArgumentParser()
