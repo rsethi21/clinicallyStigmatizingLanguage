@@ -3,9 +3,12 @@ from tqdm import tqdm
 import pandas as pd
 import yaml
 
+import torch
+import transformers
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from bert_score import BERTScorer
 import evaluate
+import accelerate
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-i", "--input", help="csv file of clinical notes with sentence snippets", required=True)
@@ -50,7 +53,7 @@ def generate(prompt: str, pipeline: object, tokenizer: object, parameters: dict,
     generated_outputs = pipeline(
         prompt,
         return_full_text=return_full_text,
-        **parameters["llm"])
+        **parameters)
     return [generated_outputs[i]["generated_text"] for i in len(generated_outputs)]
 
 def scoring(original, modified, scorer, identity):
@@ -80,7 +83,7 @@ if __name__ == "__main__":
     hyperparameters = readYaml(args.config)
     output_path = args.output
 
-    scoring_model = BERTScorer(model_type=hyperparameters["method"]["bert"], device='mps', rescale_with_baseline=True, lang='en')
+    scoring_model = BERTScorer(model_type=hyperparameters["method"]["bert"])
     identification_model = AutoModelForCausalLM.from_pretrained(
         hyperparameters["method"]["identification_model"],
         device_map='auto',
@@ -103,13 +106,15 @@ if __name__ == "__main__":
         tokenizer=modifying_tokenizer,
         torch_dtype=torch.float16,
         device_map='auto')
+    # modifying_pipeline = identification_pipeline
+    # modifying_tokenizer = identification_tokenizer
 
-    for i, row in data.iterrows():
+    for i, row in tqdm(data.iterrows(), total=len(data.index), desc="Data Entry..."):
         text = row[hyperparameters["method"]["column"]]
         prompt = format(text, modifying_tokenizer, sp = hyperparameters["method"]["modifying_prompt"], context = None)
         examples = generate(prompt, modifying_pipeline, modifying_tokenizer, hyperparameters["modifying_llm"])
         scores = []
-        for example in examples:
+        for example in tqdm(examples, desc="Generated Example..."):
             identification_prompt = format(example, identification_tokenizer, sp = hyperparameters["method"]["identification_prompt"], context = None)
             prediction = generate(identification_prompt, identification_pipeline, hyperparameters["identification_llm"])
             processed_prediction = process_identity(prediction)
