@@ -106,3 +106,13 @@ if __name__ == "__main__":
 
     for i, row in data.iterrows():
         text = row[hyperparameters["method"]["column"]]
+        prompt = format(text, modifying_tokenizer, sp = hyperparameters["method"]["modifying_prompt"], context = None)
+        examples = generate(prompt, modifying_pipeline, modifying_tokenizer, hyperparameters["modifying_llm"])
+        scores = []
+        for example in examples:
+            identification_prompt = format(example, identification_tokenizer, sp = hyperparameters["method"]["identification_prompt"], context = None)
+            prediction = generate(identification_prompt, identification_pipeline, hyperparameters["identification_llm"])
+            processed_prediction = process_identity(prediction)
+            final_score = scoring(text, example, scoring_model, processed_prediction)
+            print(final_score)
+        exit()
