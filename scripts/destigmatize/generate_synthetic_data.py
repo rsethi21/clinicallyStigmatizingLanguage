@@ -20,7 +20,7 @@ def readYaml(fp: str):
         dictionary = yaml.safe_load(file)
     return dictionary
 
-def format(inp: str, tokenizer: object, sp: str = None, context: str or None = None):
+def format_it(inp: str, tokenizer, sp: str = None, context: str or None = None):
     messages = []
     if sp != None:
         messages.append({"role": "system", "content": sp})
@@ -30,15 +30,18 @@ def format(inp: str, tokenizer: object, sp: str = None, context: str or None = N
         context_priming = ""
     messages.append({"role": "user", "content": f"{context_priming}\n\nHere is your query:\n{inp}"})
 
-    custom_template = """{% for message in messages %}
-    {% if message['role'] == 'system' %}
-    System: {{ message['content'] }}
-    {% elif message['role'] == 'user' %}
-    User: {{ message['content'] }}
-    {% elif message['role'] == 'assistant' %}
-    Assistant: {{ message['content'] }}
-    {% endif %}
+    custom_template = """
+    <|begin_of_text|>
+    <|start_header_id|>system<|end_header_id|>
+    {% if messages[0]['role'] == 'system' %}{{ messages[0]['content'] }}{% endif %}
+    <|eot_id|>
+    {% for message in messages[1:] %}
+    <|start_header_id|>{{ message['role'] }}<|end_header_id|>
+    {{ message['content'] }}<|eot_id|>
     {% endfor %}
+    {% if add_generation_prompt %}
+    <|start_header_id|>assistant<|end_header_id|>
+    {% endif %}
     """
     
     try:
@@ -54,7 +57,7 @@ def generate(prompt: str, pipeline: object, tokenizer: object, parameters: dict,
         prompt,
         return_full_text=return_full_text,
         **parameters)
-    return [generated_outputs[i]["generated_text"] for i in len(generated_outputs)]
+    return [generated_outputs[i]["generated_text"] for i in range(len(generated_outputs))]
 
 def scoring(original, modified, scorer, identity):
     _, __, F1 = scorer.score([original], [modified])
@@ -106,18 +109,18 @@ if __name__ == "__main__":
         tokenizer=modifying_tokenizer,
         torch_dtype=torch.float16,
         device_map='auto')
-    # modifying_pipeline = identification_pipeline
-    # modifying_tokenizer = identification_tokenizer
 
     for i, row in tqdm(data.iterrows(), total=len(data.index), desc="Data Entry..."):
         text = row[hyperparameters["method"]["column"]]
-        prompt = format(text, modifying_tokenizer, sp = hyperparameters["method"]["modifying_prompt"], context = None)
+        prompt = format_it(text, modifying_tokenizer, sp = hyperparameters["method"]["modifying_prompt"], context = None)
+        print(prompt)
         examples = generate(prompt, modifying_pipeline, modifying_tokenizer, hyperparameters["modifying_llm"])
         scores = []
         for example in tqdm(examples, desc="Generated Example..."):
-            identification_prompt = format(example, identification_tokenizer, sp = hyperparameters["method"]["identification_prompt"], context = None)
-            prediction = generate(identification_prompt, identification_pipeline, hyperparameters["identification_llm"])
-            processed_prediction = process_identity(prediction)
-            final_score = scoring(text, example, scoring_model, processed_prediction)
+            print(example)
+            identification_prompt = format_it(example, identification_tokenizer, sp = hyperparameters["method"]["identification_prompt"], context = None)
+            prediction = generate(identification_prompt, identification_pipeline, identification_tokenizer, hyperparameters["identification_llm"])
+            processed_prediction = process_identity(prediction[0])
+            final_score = scoring(text, example, scoring_model, 1-int(processed_prediction))
             print(final_score)
         exit()
