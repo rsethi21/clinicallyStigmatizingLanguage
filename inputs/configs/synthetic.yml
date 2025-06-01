@@ -1,0 +1,30 @@
+# hyperparameters for llm
+identification_llm:
+  do_sample: True
+  top_k: 10
+  num_return_sequences: 1
+  temperature: 0.001
+  max_length: 6144
+  max_new_tokens: 6144
+  length_penalty: 1.0
+  repetition_penalty: 1.0
+  num_beams: 1
+# hyperparameters for llm
+modifying_llm:
+  do_sample: True
+  top_k: 10
+  num_return_sequences: 5
+  temperature: 0.001
+  max_length: 8000
+  max_new_tokens: 8000
+  length_penalty: 1.0
+  repetition_penalty: 1.0
+  num_beams: 1
+# hyperparameters for approach
+method:
+  identification_model: /home1/rsethi1/stigmatizing_lang_rsh/external_validation/sft
+  bert: /home1/shared/Models/BERT/ModernBERT-large
+  modification_model: /home1/shared/Models/Llama/Llama-3.3-70B-Instruct
+  column: SentenceSnippet
+  modifying_prompt: You are a physician revising your clinical notes. You have found stigmatizing language in a substance use context in the note below. Your task is to correct the terms that are stigmatizing but keep the contents and details of the notes. Please only return the rewritten note and nothing else.
+  identification_prompt: You are a physician revising your clinical notes. You must determine if your note has any clinically stigmatizing language in terms of substance use. Please answer simply yes or no and no other text.
