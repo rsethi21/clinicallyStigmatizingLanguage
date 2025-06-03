@@ -2,12 +2,13 @@ import argparse
 from tqdm import tqdm
 import pandas as pd
 import yaml
+import pdb
+import json
 
 import torch
 import transformers
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from bert_score import BERTScorer
-import evaluate
 import accelerate
 
 parser = argparse.ArgumentParser()
@@ -52,6 +53,14 @@ def format_it(inp: str, tokenizer, sp: str = None, context: str or None = None):
 
     return input_text
 
+def perplexity(text, model, tokenizer):
+    output = tokenizer(text, return_tensors="pt")
+    with torch.no_grad():
+        outputs = model(**output, labels=output["input_ids"])
+        loss = outputs.loss
+        perplexity = torch.exp(loss)
+    return perplexity
+
 def generate(prompt: str, pipeline: object, tokenizer: object, parameters: dict, return_full_text=False):
     generated_outputs = pipeline(
         prompt,
@@ -62,14 +71,13 @@ def generate(prompt: str, pipeline: object, tokenizer: object, parameters: dict,
 def scoring(original, modified, scorer, identity):
     _, __, F1 = scorer.score([original], [modified])
     similarity = F1.mean()
-    return similarity*identity
+    return similarity
 
-def scoring_perplexity(original, modified, scorer, output_identity, model, tokenizer):
+def scoring_perplexity(original, modified, scorer, raw_output, model, tokenizer):
     _, __, F1 = scorer.score([original], [modified])
     similarity = F1.mean()
-    perplexity = evaluate.load("perplexity")
-    probability = perplexity.compute(predictions=[output_identity], model=model, tokenizer=tokenizer)
-    return similarity*probability[0]
+    liklihood = perplexity(raw_output, model, tokenizer)
+    return similarity*(1.0/liklihood)
 
 def process_identity(output):
     prediction = None
@@ -110,17 +118,24 @@ if __name__ == "__main__":
         torch_dtype=torch.float16,
         device_map='auto')
 
+    out_data = []
     for i, row in tqdm(data.iterrows(), total=len(data.index), desc="Data Entry..."):
         text = row[hyperparameters["method"]["column"]]
         prompt = format_it(text, modifying_tokenizer, sp = hyperparameters["method"]["modifying_prompt"], context = None)
-        print(prompt)
         examples = generate(prompt, modifying_pipeline, modifying_tokenizer, hyperparameters["modifying_llm"])
         scores = []
+        predictions = []
         for example in tqdm(examples, desc="Generated Example..."):
-            print(example)
-            identification_prompt = format_it(example, identification_tokenizer, sp = hyperparameters["method"]["identification_prompt"], context = None)
+            context = None
+            if hyperparameters["method"]["context"] != None:
+                context = "\n\n".join(list(pd.read_csv(hyperparameters["method"]["context"])["Context"]))
+            identification_prompt = format_it(example, identification_tokenizer, sp = hyperparameters["method"]["identification_prompt"], context = context)
             prediction = generate(identification_prompt, identification_pipeline, identification_tokenizer, hyperparameters["identification_llm"])
             processed_prediction = process_identity(prediction[0])
             final_score = scoring(text, example, scoring_model, 1-int(processed_prediction))
-            print(final_score)
-        exit()
+            # final_score = scoring_perplexity(text, example, scoring_model, f"{identification_prompt}\n<|start_header_id|>assistant<|end_header_id|>{prediction}<|eot_id|>", identification_model, identification_tokenizer)
+            scores.append(final_score.item())
+            predictions.append(processed_prediction)
+        out_data.append({"original": text, "examples": examples, "scores": scores, "predictions": predictions})
+        break
+    json.dump(out_data, open(f"{args.output}/output.json", "w"))

@@ -14,14 +14,15 @@ modifying_llm:
   do_sample: True
   top_k: 10
   num_return_sequences: 5
-  temperature: 0.1
+  temperature: 1.0
   max_new_tokens: 2000
   length_penalty: 1.0
   repetition_penalty: 1.0
   num_beams: 1
 # hyperparameters for approach
 method:
-  identification_model: /home1/rsethi1/stigmatizing_lang_rsh/external_validation/sft
+  identification_model: /home1/shared/Models/Llama/Meta-Llama-3-8B-Instruct
+  context: /home1/rsethi1/stigmatizing_lang_rsh/inputs/prompts/context_sa.csv
   bert: bert-base-uncased
   modification_model: /home1/shared/Models/Llama/Meta-Llama-3-8B-Instruct
   column: SentenceSnippet
