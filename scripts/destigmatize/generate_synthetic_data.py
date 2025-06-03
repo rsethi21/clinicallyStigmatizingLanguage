@@ -118,14 +118,17 @@ if __name__ == "__main__":
         torch_dtype=torch.float16,
         device_map='auto')
 
+    sampled_data = data.sample(frac=hyperparameters["method"]["frac"])
+    sampled_data.reset_index(inplace=True, drop=True)
+
     out_data = []
-    for i, row in tqdm(data.iterrows(), total=len(data.index), desc="Data Entry..."):
+    for i, row in tqdm(sampled_data.iterrows(), total=len(sampled_data.index), desc="Data Entry..."):
         text = row[hyperparameters["method"]["column"]]
         prompt = format_it(text, modifying_tokenizer, sp = hyperparameters["method"]["modifying_prompt"], context = None)
         examples = generate(prompt, modifying_pipeline, modifying_tokenizer, hyperparameters["modifying_llm"])
         scores = []
         predictions = []
-        for example in tqdm(examples, desc="Generated Example..."):
+        for example in examples:
             context = None
             if hyperparameters["method"]["context"] != None:
                 context = "\n\n".join(list(pd.read_csv(hyperparameters["method"]["context"])["Context"]))
@@ -137,5 +140,4 @@ if __name__ == "__main__":
             scores.append(final_score.item())
             predictions.append(processed_prediction)
         out_data.append({"original": text, "examples": examples, "scores": scores, "predictions": predictions})
-        break
     json.dump(out_data, open(f"{args.output}/output.json", "w"))
