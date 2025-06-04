@@ -21,6 +21,7 @@
     ### during inference will need to chunk the clinical note to locate the area where the langauge can be found
 
 ## provide critique to develop revision
+    ### randomly draw principles from the constitution
 
 ## repeat top two steps n times
 
