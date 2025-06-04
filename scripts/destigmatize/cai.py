@@ -18,6 +18,7 @@
 
 ## data loop
 ## provide current clinical note (probably those considered stigmatizing) as "initial response" and request critique using the constitution
+    ### during inference will need to chunk the clinical note to locate the area where the langauge can be found
 
 ## provide critique to develop revision
 
