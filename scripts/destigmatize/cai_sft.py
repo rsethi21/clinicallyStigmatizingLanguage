@@ -11,6 +11,7 @@ import transformers
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import torch
 import accelerate
+from bert_score import BERTScorer
 
 # define arguments
 parser = argparse.ArgumentParser()
@@ -57,6 +58,12 @@ def format_it(inp: str, tokenizer, sp: str = None, context: str or None = None):
 
     return input_text
 
+# scoring function
+def scoring(original, modified, scorer, identity):
+    _, __, F1 = scorer.score([original], [modified])
+    similarity = F1.mean()
+    return similarity
+
 # generation function
 def generate(prompt: str, pipeline: object, tokenizer: object, parameters: dict, return_full_text=False):
     generated_outputs = pipeline(
@@ -75,6 +82,9 @@ if __name__ == "__main__":
     hyperparameters = readYaml(args.config)
 
     ## load models
+    bert_scorer_model = None
+    identification_model = None
+    identification_tokenizer = None
     critique_model = None
     critique_tokenizer = None
     revision_model = None
@@ -92,5 +102,7 @@ if __name__ == "__main__":
     ## use initial and final response for SFT
 
     ## provide revisions for DPO
+        ### multiple where the best is the one thats shortest edit distance and stigmatizing detection
 
     ## save model and data
+        ### label the data using the scoring function
