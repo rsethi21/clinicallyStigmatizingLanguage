@@ -140,4 +140,4 @@ if __name__ == "__main__":
             scores.append(final_score.item())
             predictions.append(processed_prediction)
         out_data.append({"original": text, "examples": examples, "scores": scores, "predictions": predictions})
-    json.dump(out_data, open(f"{args.output}/output.json", "w"))
+    json.dump(out_data, open(f"{args.output}/output.json", "w"), indent=4)
