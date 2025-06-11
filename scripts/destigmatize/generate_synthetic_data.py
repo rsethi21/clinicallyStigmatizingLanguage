@@ -126,6 +126,7 @@ if __name__ == "__main__":
         text = row[hyperparameters["method"]["column"]]
         prompt = format_it(text, modifying_tokenizer, sp = hyperparameters["method"]["modifying_prompt"], context = None)
         examples = generate(prompt, modifying_pipeline, modifying_tokenizer, hyperparameters["modifying_llm"])
+        examples.insert(0, row[hyperparameters["method"]["column"]])
         scores = []
         predictions = []
         for example in examples:
@@ -140,4 +141,4 @@ if __name__ == "__main__":
             scores.append(final_score.item())
             predictions.append(processed_prediction)
         out_data.append({"original": text, "examples": examples, "scores": scores, "predictions": predictions})
-    json.dump(out_data, open(f"{args.output}/output.json", "w"), indent=4)
+    json.dump(out_data, open(f"{args.output}/output_val.json", "w"), indent=4)
