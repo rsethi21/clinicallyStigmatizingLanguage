@@ -117,9 +117,12 @@ if __name__ == "__main__":
         tokenizer=modifying_tokenizer,
         torch_dtype=torch.float16,
         device_map='auto')
-
-    sampled_data = data.sample(frac=hyperparameters["method"]["frac"])
-    sampled_data.reset_index(inplace=True, drop=True)
+    
+    if hyperparameters["method"]["frac"] != None:
+        sampled_data = data.sample(frac=hyperparameters["method"]["frac"])
+        sampled_data.reset_index(inplace=True, drop=True)
+    else:
+        sampled_data = data
 
     out_data = []
     for i, row in tqdm(sampled_data.iterrows(), total=len(sampled_data.index), desc="Data Entry..."):
@@ -141,4 +144,4 @@ if __name__ == "__main__":
             scores.append(final_score.item())
             predictions.append(processed_prediction)
         out_data.append({"original": text, "examples": examples, "scores": scores, "predictions": predictions})
-    json.dump(out_data, open(f"{args.output}/output_val.json", "w"), indent=4)
+    json.dump(out_data, open(f"{args.output}/output_iterative.json", "w"), indent=4)

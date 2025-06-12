@@ -118,7 +118,7 @@ if __name__ == "__main__":
             prediction = generate(identification_prompt, identification_pipeline, identification_tokenizer, hyperparameters["identification_llm"])
             processed_prediction = process_identity(prediction[0])
             predictions.append(processed_prediction)
-        data[i]["predictions_full"] = predictions
+        data[i]["predictions"] = predictions
         
         
-    json.dump(data, open(f"{args.output}/output.json", "w"), indent=4)
+    json.dump(data, open(f"{args.output}/output_sequential.json", "w"), indent=4)

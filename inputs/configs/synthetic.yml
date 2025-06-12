@@ -29,4 +29,4 @@ method:
   modifying_prompt: You are a physician revising your clinical notes. You have found stigmatizing language in a substance use context in the note below. Your task is to correct the terms that are stigmatizing but keep the contents and details of the notes. Please only return the rewritten note and nothing else.
   # generate json may work better
   identification_prompt: You are a physician revising your clinical notes. You must determine if your note has any clinically stigmatizing language in terms of substance use. Please answer simply yes or no and no other text.
-  frac: 0.08
+  frac: null
