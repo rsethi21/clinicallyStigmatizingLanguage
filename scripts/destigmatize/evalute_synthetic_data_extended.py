@@ -108,7 +108,6 @@ if __name__ == "__main__":
 
     for i, row in tqdm(enumerate(data), total=len(data)):
         examples = row["examples"]
-        examples.insert(0, row["original"])
         predictions = []
         for example in tqdm(examples):
             context = None

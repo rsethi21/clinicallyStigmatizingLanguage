@@ -132,7 +132,14 @@ if __name__ == "__main__":
         examples.insert(0, row[hyperparameters["method"]["column"]])
         scores = []
         predictions = []
-        for example in examples:
+        fail = []
+        for n, example in enumerate(examples):
+            try:
+                index = example.index("{")
+                example = json.loads(example[index:])[hyperparameters["method"]["json_header"]]
+                examples[n] = example
+            except:
+                fail.append(n)
             context = None
             if hyperparameters["method"]["context"] != None:
                 context = "\n\n".join(list(pd.read_csv(hyperparameters["method"]["context"])["Context"]))
@@ -143,5 +150,5 @@ if __name__ == "__main__":
             # final_score = scoring_perplexity(text, example, scoring_model, f"{identification_prompt}\n<|start_header_id|>assistant<|end_header_id|>{prediction}<|eot_id|>", identification_model, identification_tokenizer)
             scores.append(final_score.item())
             predictions.append(processed_prediction)
-        out_data.append({"original": text, "examples": examples, "scores": scores, "predictions": predictions})
-    json.dump(out_data, open(f"{args.output}/output_iterative.json", "w"), indent=4)
+        out_data.append({"original": text, "examples": examples, "scores": scores, "predictions": predictions, "fail": fail})
+    json.dump(out_data, open(f"{args.output}/output_json.json", "w"), indent=4)
