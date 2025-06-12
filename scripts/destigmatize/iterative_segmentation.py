@@ -1,5 +1,6 @@
 import json
 import pandas as pd
+from tqdm import tqdm
 import pdb
 from transformers import AutoTokenizer
 
@@ -16,7 +17,7 @@ if __name__ == "__main__":
         pass
     reformatted_examples = [ori_sentence]
     split_by = int(0.05*len(tokens))
-    split_by = 1
+    split_by = 5
 
     for i in range(0, len(tokens), 1):
         new_input = tokenizer.decode(tokens[0:i])

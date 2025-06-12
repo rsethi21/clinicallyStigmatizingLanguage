@@ -110,7 +110,7 @@ if __name__ == "__main__":
         examples = row["examples"]
         examples.insert(0, row["original"])
         predictions = []
-        for example in examples:
+        for example in tqdm(examples):
             context = None
             if hyperparameters["method"]["context"] != None:
                 context = "\n\n".join(list(pd.read_csv(hyperparameters["method"]["context"])["Context"]))
