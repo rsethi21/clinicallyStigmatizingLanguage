@@ -17,3 +17,4 @@ pyyaml
 matplotlib
 deepspeed
 bert_score
+gradio
