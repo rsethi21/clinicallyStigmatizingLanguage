@@ -10,6 +10,6 @@ llm:
   repetition_penalty: 1.0
   num_beams: 1
 method:
-  model_path: <path/to/trained/model>
+  model_path: /home1/rsethi1/stigmatizing_lang_rsh/outputs/models/sft
   # system prompt
   sp: You are a physician revising your clinical notes. You must determine if your note has any clinically stigmatizing language in terms of substance use. Please answer simply yes or no and no other text.
