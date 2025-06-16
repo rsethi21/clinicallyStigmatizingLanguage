@@ -25,9 +25,11 @@ method:
   context: /home1/rsethi1/stigmatizing_lang_rsh/inputs/prompts/context_sa.csv
   bert: bert-base-uncased
   modification_model: /home1/shared/Models/Llama/Meta-Llama-3-8B-Instruct
-  column: SentenceSnippet
+  column: Assessment
   modifying_prompt: You are a physician revising your clinical notes. You have found stigmatizing language in a substance use context in the note below. Your task is to correct the terms that are stigmatizing but keep the contents and details of the notes. Please only return the rewritten note and nothing else. Return your answer as a json string with the note stored under the key 'rewritten'.
   # generate json may work better
   identification_prompt: You are a physician revising your clinical notes. You must determine if your note has any clinically stigmatizing language in terms of substance use. Please answer simply yes or no and no other text.
-  frac: null
+  frac: 0.01
   json_header: "rewritten"
+  chunk_size: 100
+  chunk_overlap: 10
