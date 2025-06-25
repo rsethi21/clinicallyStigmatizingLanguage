@@ -7,7 +7,7 @@ import json
 
 import torch
 import transformers
-from transformers import AutoTokenizer, AutoModelForCausalLM
+from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 from bert_score import BERTScorer
 import accelerate
 
@@ -93,6 +93,7 @@ if __name__ == "__main__":
     data = pd.read_csv(args.input)
     hyperparameters = readYaml(args.config)
     output_path = args.output
+    c = BitsAndBytesConfig(load_in_4bit=True)
 
     scoring_model = BERTScorer(model_type=hyperparameters["method"]["bert"])
     identification_model = AutoModelForCausalLM.from_pretrained(
@@ -110,7 +111,7 @@ if __name__ == "__main__":
         hyperparameters["method"]["modification_model"],
         device_map='auto',
         local_files_only=True)
-    modifying_tokenizer = AutoTokenizer.from_pretrained(hyperparameters["method"]["modification_model"], local_files_only=True)
+    modifying_tokenizer = AutoTokenizer.from_pretrained(hyperparameters["method"]["modification_model"], quantization_config=c, local_files_only=True)
     modifying_pipeline = transformers.pipeline(
         'text-generation',
         model=modifying_model,
@@ -151,4 +152,4 @@ if __name__ == "__main__":
             scores.append(final_score.item())
             predictions.append(processed_prediction)
         out_data.append({"original": text, "examples": examples, "scores": scores, "predictions": predictions, "fail": fail})
-    json.dump(out_data, open(f"{args.output}/output_review.json", "w"), indent=4)
+    json.dump(out_data, open(f"{args.output}/output_review_full_note.json", "w"), indent=4)

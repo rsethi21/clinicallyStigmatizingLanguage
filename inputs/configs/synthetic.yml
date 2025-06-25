@@ -13,23 +13,23 @@ identification_llm:
 modifying_llm:
   do_sample: True
   top_k: 10
-  num_return_sequences: 1
+  num_return_sequences: 3
   temperature: 1.0
-  max_new_tokens: 2000
+  max_new_tokens: 8000
   length_penalty: 1.0
   repetition_penalty: 1.0
   num_beams: 1
 # hyperparameters for approach
 method:
   identification_model: /home1/rsethi1/stigmatizing_lang_rsh/outputs/models/sft
-  context: /home1/rsethi1/stigmatizing_lang_rsh/inputs/prompts/context_sa.csv
+  context: null
   bert: bert-base-uncased
-  modification_model: /home1/shared/Models/Llama/Meta-Llama-3-8B-Instruct
+  modification_model: /home1/shared/Models/Llama/Llama-3.3-70B-Instruct/
   column: Assessment
-  modifying_prompt: You are a physician revising your clinical notes. You have found stigmatizing language in a substance use context in the note below. Your task is to correct the terms that are stigmatizing but keep the contents and details of the notes. Please only return the rewritten note and nothing else. Return your answer as a json string with the note stored under the key 'rewritten'.
+  modifying_prompt: You are a physician revising your clinical notes. You have found stigmatizing language in a substance use context in the note below. Your task is to correct the terms that are stigmatizing in a substance use context only but keep the notes contents, details, and author's style unchanged. Please only return the rewritten note and nothing else. Return your answer as a json string with the note stored under the key 'rewritten'.
   # generate json may work better
   identification_prompt: You are a physician revising your clinical notes. You must determine if your note has any clinically stigmatizing language in terms of substance use. Please answer simply yes or no and no other text.
-  frac: 0.01
+  frac: 0.001
   json_header: "rewritten"
   chunk_size: 100
   chunk_overlap: 10
