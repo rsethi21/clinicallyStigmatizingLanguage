@@ -6,7 +6,7 @@ from tqdm import tqdm
 import pdb
 
 import transformers
-from transformers import AutoTokenizer, AutoModelForCausalLM
+from transformers import AutoTokenizer, AutoModelForCausalLM, AutoModel
 import torch
 import pandas as pd
 import numpy as np
@@ -166,6 +166,10 @@ if __name__ == "__main__":
         parameters["method"]["model_path"],
         device_map='auto',
         local_files_only=True)
+    embedding_model = AutoModel.from_pretrained(
+        parameters["method"]["model_path"],
+        device_map='auto',
+        local_files_only=True)
     pipeline_tg = transformers.pipeline(
         'text-generation',
         model=model,
@@ -174,7 +178,7 @@ if __name__ == "__main__":
         device_map='auto')
     pipeline_ee = transformers.pipeline(
         'feature-extraction',
-        model=model,
+        model=embedding_model,
         tokenizer=tokenizer,
         torch_dtype=torch.float16,
         device_map='auto')

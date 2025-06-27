@@ -126,14 +126,18 @@ if __name__ == "__main__":
     for i, row in tqdm(sampled_data.iterrows(), total=len(sampled_data.index), desc="Data Entry..."):
         text = row[hyperparameters["method"]["column"]]
         chunks = chunk_it(text, hyperparameters["method"]["chunk_size"], hyperparameters["method"]["chunk_overlap"], identification_tokenizer)
-        final = None
-        for chunk in chunks:
+        final = []
+        for ind, chunk in enumerate(chunks):
             identification_prompt = format_it(chunk, identification_tokenizer, sp = hyperparameters["method"]["identification_prompt"], context = None)
             prediction = generate(identification_prompt, identification_pipeline, identification_tokenizer, hyperparameters["identification_llm"])
             processed_prediction = process_identity(prediction[0])
             if processed_prediction == 1:
-                final = chunk
-                break
-        out_data.append({"SentenceSnippet": final, hyperparameters["method"]["column"]: text, "BiasLabel": 1, "MatchingTerms": row["MatchingTerms"]})
+                final.append(chunk)
+                # break
+        if len(final) == 0:
+            final = None
+        else:
+            for item in final:
+                out_data.append({"entry_index": i, "chunk": item, hyperparameters["method"]["column"]: text, "BiasLabel": 1, "MatchingTerms": row["MatchingTerms"]})
     out_csv = pd.DataFrame.from_dict(out_data)
-    out_csv.to_csv(f"{args.output}/input_automated.csv")
+    out_csv.to_csv(f"{args.output}/input_automated_2.csv")

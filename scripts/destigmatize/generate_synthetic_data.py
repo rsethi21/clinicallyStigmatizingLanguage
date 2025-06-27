@@ -50,6 +50,7 @@ def format_it(inp: str, tokenizer, sp: str = None, context: str or None = None):
     except:
         tokenizer.chat_template = custom_template
         input_text=tokenizer.apply_chat_template(messages, tokenize=False)
+        print("Custom Used\n\n\n\n")
 
     return input_text
 
@@ -93,7 +94,7 @@ if __name__ == "__main__":
     data = pd.read_csv(args.input)
     hyperparameters = readYaml(args.config)
     output_path = args.output
-    c = BitsAndBytesConfig(load_in_4bit=True)
+    c = BitsAndBytesConfig(load_in_4bit=hyperparameters["method"]["quant"])
 
     scoring_model = BERTScorer(model_type=hyperparameters["method"]["bert"])
     identification_model = AutoModelForCausalLM.from_pretrained(
@@ -152,4 +153,4 @@ if __name__ == "__main__":
             scores.append(final_score.item())
             predictions.append(processed_prediction)
         out_data.append({"original": text, "examples": examples, "scores": scores, "predictions": predictions, "fail": fail})
-    json.dump(out_data, open(f"{args.output}/output_review_full_note.json", "w"), indent=4)
+    json.dump(out_data, open(f"{args.output}/output_review_70B_newer_all.json", "w"), indent=4)
